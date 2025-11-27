@@ -18,7 +18,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "ts-node -r tsconfig-paths/register src/database/run-seed.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/run-seed.ts",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/config/database.config.ts",
+    "migration:create": "typeorm-ts-node-commonjs migration:create",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/config/database.config.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/config/database.config.ts"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",
@@ -30,6 +34,7 @@
     "@nestjs/platform-express": "^11.1.9",
     "@nestjs/platform-socket.io": "^11.1.9",
     "@nestjs/swagger": "^11.2.3",
+    "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.9",
     "@types/nodemailer": "^7.0.4",

@@ -86,13 +86,13 @@ const Emails = () => {
   useEffect(() => {
     // Check if template ID is in URL
     const templateId = searchParams.get('template');
-    if (templateId) {
+    if (templateId && emailTemplates.length > 0) {
       loadTemplate(templateId);
       // Clear the URL parameter
       setSearchParams({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, emailTemplates]);
 
   const fetchEmails = async () => {
     setLoading(true);
@@ -138,13 +138,21 @@ const Emails = () => {
     try {
       const response = await api.get(`/email-templates/${templateId}`);
       const template = response.data.data || response.data;
-      form.setFieldsValue({
-        subject: template.subject,
-        body: template.body,
-      });
-      setIsModalOpen(true);
+      if (template) {
+        // Ensure modal is open before setting form values
+        setIsModalOpen(true);
+        // Use setTimeout to ensure form is mounted
+        setTimeout(() => {
+          form.setFieldsValue({
+            subject: template.subject,
+            body: template.body,
+            templateId: template.id,
+          });
+        }, 100);
+        message.info(t('emails.templateLoaded', { templateName: template.name }));
+      }
     } catch (error: any) {
-      message.error(error.response?.data?.message || t('common.error'));
+      message.error(error.response?.data?.message || t('emails.templateNotFound'));
     }
   };
 

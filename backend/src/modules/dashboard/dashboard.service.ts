@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { Customer } from '../customers/entities/customer.entity';
 import { Opportunity } from '../opportunities/entities/opportunity.entity';
 import { Task, TaskStatus } from '../tasks/entities/task.entity';
@@ -20,9 +22,16 @@ export class DashboardService {
     private invoiceRepository: Repository<Invoice>,
     @InjectRepository(Activity)
     private activityRepository: Repository<Activity>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async getStats(tenantId: string) {
+    const cacheKey = `dashboard:stats:${tenantId}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const [customers, opportunities, tasks, invoices] = await Promise.all([
       this.customerRepository.count({ where: { tenantId } }),
       this.opportunityRepository.count({ where: { tenantId } }),
@@ -30,15 +39,24 @@ export class DashboardService {
       this.invoiceRepository.count({ where: { tenantId } }),
     ]);
 
-    return {
+    const result = {
       customers,
       opportunities,
       tasks,
       invoices,
     };
+
+    await this.cacheManager.set(cacheKey, result, 30000); // 30 seconds cache
+    return result;
   }
 
   async getDetailedStats(tenantId: string) {
+    const cacheKey = `dashboard:detailed:${tenantId}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -132,6 +150,47 @@ export class DashboardService {
           : null,
       })),
     };
+
+    const result = {
+      summary: {
+        customers,
+        opportunities,
+        tasks,
+        invoices,
+        totalRevenue: parseFloat(totalRevenue?.total || '0'),
+        monthlyRevenue: parseFloat(monthlyRevenue?.total || '0'),
+      },
+      tasksByStatus: tasksByStatus.map((t: any) => ({
+        status: t.status,
+        count: parseInt(t.count),
+      })),
+      opportunitiesByStage: opportunitiesByStage.map((o: any) => ({
+        stage: o.stage,
+        count: parseInt(o.count),
+        value: parseFloat(o.value || '0'),
+      })),
+      recentActivities: recentActivities.map((a) => ({
+        id: a.id,
+        type: a.type,
+        title: a.title,
+        description: a.description,
+        createdAt: a.createdAt,
+        user: a.user
+          ? {
+              firstName: a.user.firstName,
+              lastName: a.user.lastName,
+            }
+          : null,
+        customer: a.customer
+          ? {
+              name: a.customer.name,
+            }
+          : null,
+      })),
+    };
+
+    await this.cacheManager.set(cacheKey, result, 30000); // 30 seconds cache
+    return result;
   }
 }
 

@@ -100,11 +100,36 @@ const Payments = () => {
 
   const handleSubmit = async (values: any) => {
     try {
+      // Validate required fields
+      if (!values.invoiceId) {
+        message.error(t('payments.invoiceRequired'));
+        return;
+      }
+      if (!values.amount || Number(values.amount) <= 0) {
+        message.error(t('payments.amountRequired'));
+        return;
+      }
+
+      // Clean amount - remove commas and convert to number
+      const cleanAmount = typeof values.amount === 'string' 
+        ? parseFloat(values.amount.replace(/,/g, '')) 
+        : Number(values.amount);
+      
+      if (isNaN(cleanAmount) || cleanAmount <= 0) {
+        message.error(t('payments.amountRequired'));
+        return;
+      }
+
       const payload = {
-        ...values,
-        amount: Number(values.amount),
-        paymentDate: values.paymentDate ? values.paymentDate.toISOString() : new Date().toISOString(),
+        invoiceId: values.invoiceId,
+        amount: cleanAmount,
+        paymentMethod: values.paymentMethod || undefined,
+        paymentDate: values.paymentDate 
+          ? (dayjs.isDayjs(values.paymentDate) ? values.paymentDate.toISOString() : values.paymentDate)
+          : new Date().toISOString(),
+        notes: values.notes || undefined,
       };
+
       if (editingPayment) {
         await api.patch(`/payments/${editingPayment.id}`, payload);
         message.success(t('payments.updateSuccess'));
@@ -115,9 +140,12 @@ const Payments = () => {
       setModalVisible(false);
       form.resetFields();
       setEditingPayment(null);
-      fetchData();
+      // Refresh data immediately
+      await fetchData();
     } catch (error: any) {
-      message.error(error.response?.data?.message || t('common.error'));
+      const errorMessage = error.response?.data?.message || error.message || t('common.error');
+      message.error(errorMessage);
+      console.error('Payment error:', error.response?.data || error);
     }
   };
 

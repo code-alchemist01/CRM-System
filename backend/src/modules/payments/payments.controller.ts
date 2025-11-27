@@ -25,8 +25,12 @@ export class PaymentsController {
 
   @Post()
   @ApiOperation({ summary: 'Create payment' })
-  create(@Body() createPaymentDto: CreatePaymentDto, @Request() req) {
-    return this.paymentsService.create(createPaymentDto, req.user.tenantId);
+  async create(@Body() createPaymentDto: CreatePaymentDto, @Request() req) {
+    try {
+      return await this.paymentsService.create(createPaymentDto, req.user.tenantId);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get()

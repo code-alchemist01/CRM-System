@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import databaseConfig from './config/database.config';
@@ -63,6 +64,19 @@ import * as redisStore from 'cache-manager-redis-store';
       inject: [ConfigService],
       isGlobal: true,
     }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const rateLimit = configService.get('app.rateLimit');
+        return {
+          throttlers: [{
+            ttl: (rateLimit?.ttl || 60) * 1000, // Convert to milliseconds
+            limit: rateLimit?.limit || 100,
+          }],
+        };
+      },
+      inject: [ConfigService],
+    }),
     TenantsModule,
     AuthModule,
     UsersModule,
@@ -88,6 +102,10 @@ import * as redisStore from 'cache-manager-redis-store';
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditLogInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

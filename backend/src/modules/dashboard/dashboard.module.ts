@@ -14,6 +14,7 @@ import { Activity } from '../activities/entities/activity.entity';
   ],
   controllers: [DashboardController],
   providers: [DashboardService],
+  exports: [DashboardService],
 })
 export class DashboardModule {}
 
