@@ -61,6 +61,7 @@ const Tasks = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -138,6 +139,33 @@ const Tasks = () => {
     } catch (error: any) {
       message.error(error.response?.data?.message || t('common.error'));
     }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t('tasks.noSelection'));
+      return;
+    }
+
+    try {
+      await Promise.all(
+        selectedRowKeys.map((id) => api.delete(`/tasks/${id}`)),
+      );
+      message.success(
+        t('tasks.bulkDeleteSuccess', { count: selectedRowKeys.length }),
+      );
+      setSelectedRowKeys([]);
+      fetchTasks();
+    } catch (error: any) {
+      message.error(error.response?.data?.message || t('common.error'));
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
   };
 
   const getStatusColor = (status: string) => {
@@ -314,18 +342,36 @@ const Tasks = () => {
           </Title>
         </Col>
         <Col>
-          <Button
-            type="primary"
-            size="large"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setEditingTask(null);
-              form.resetFields();
-              setModalVisible(true);
-            }}
-          >
-            {t('tasks.create')}
-          </Button>
+          <Space>
+            {selectedRowKeys.length > 0 && (
+              <Popconfirm
+                title={t('tasks.bulkDeleteConfirm', { count: selectedRowKeys.length })}
+                onConfirm={handleBulkDelete}
+                okText={t('common.yes')}
+                cancelText={t('common.no')}
+              >
+                <Button
+                  danger
+                  size="large"
+                  icon={<DeleteOutlined />}
+                >
+                  {t('tasks.bulkDelete', { count: selectedRowKeys.length })}
+                </Button>
+              </Popconfirm>
+            )}
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setEditingTask(null);
+                form.resetFields();
+                setModalVisible(true);
+              }}
+            >
+              {t('tasks.create')}
+            </Button>
+          </Space>
         </Col>
       </Row>
 
@@ -364,6 +410,7 @@ const Tasks = () => {
           dataSource={filteredTasks}
           loading={loading}
           rowKey="id"
+          rowSelection={rowSelection}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

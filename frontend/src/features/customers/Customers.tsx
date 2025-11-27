@@ -49,6 +49,7 @@ const Customers = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -114,6 +115,33 @@ const Customers = () => {
     } catch (error: any) {
       message.error(error.response?.data?.message || t('common.error'));
     }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t('customers.noSelection'));
+      return;
+    }
+
+    try {
+      await Promise.all(
+        selectedRowKeys.map((id) => api.delete(`/customers/${id}`)),
+      );
+      message.success(
+        t('customers.bulkDeleteSuccess', { count: selectedRowKeys.length }),
+      );
+      setSelectedRowKeys([]);
+      fetchCustomers();
+    } catch (error: any) {
+      message.error(error.response?.data?.message || t('common.error'));
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
   };
 
   const columns: ColumnsType<Customer> = [
@@ -227,18 +255,36 @@ const Customers = () => {
           </Title>
         </Col>
         <Col>
-          <Button
-            type="primary"
-            size="large"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setEditingCustomer(null);
-              form.resetFields();
-              setModalVisible(true);
-            }}
-          >
-            {t('customers.create')}
-          </Button>
+          <Space>
+            {selectedRowKeys.length > 0 && (
+              <Popconfirm
+                title={t('customers.bulkDeleteConfirm', { count: selectedRowKeys.length })}
+                onConfirm={handleBulkDelete}
+                okText={t('common.yes')}
+                cancelText={t('common.no')}
+              >
+                <Button
+                  danger
+                  size="large"
+                  icon={<DeleteOutlined />}
+                >
+                  {t('customers.bulkDelete', { count: selectedRowKeys.length })}
+                </Button>
+              </Popconfirm>
+            )}
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setEditingCustomer(null);
+                form.resetFields();
+                setModalVisible(true);
+              }}
+            >
+              {t('customers.create')}
+            </Button>
+          </Space>
         </Col>
       </Row>
 
@@ -260,6 +306,7 @@ const Customers = () => {
           dataSource={filteredCustomers}
           loading={loading}
           rowKey="id"
+          rowSelection={rowSelection}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

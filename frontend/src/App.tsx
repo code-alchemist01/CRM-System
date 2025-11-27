@@ -17,6 +17,8 @@ import Tasks from './features/tasks/Tasks';
 import Invoices from './features/invoices/Invoices';
 import Profile from './features/profile/Profile';
 import Reports from './features/reports/Reports';
+import EmailTemplates from './features/email-templates/EmailTemplates';
+import Payments from './features/payments/Payments';
 import api from './utils/axios';
 
 function App() {
@@ -76,6 +78,8 @@ function App() {
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/email-templates" element={<EmailTemplates />} />
+                <Route path="/payments" element={<Payments />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </Layout>

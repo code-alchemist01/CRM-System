@@ -19,7 +19,10 @@ import {
   CheckCircleOutlined,
   FileTextOutlined,
   BarChartOutlined,
+  DownloadOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
+import { message } from 'antd';
 import {
   BarChart,
   Bar,
@@ -129,6 +132,46 @@ const Reports = () => {
     fetchReport();
   }, [reportType]);
 
+  const handleExportExcel = async () => {
+    try {
+      const params: any = {};
+      if (dateRange[0] && dateRange[1]) {
+        params.startDate = dateRange[0].format('YYYY-MM-DD');
+        params.endDate = dateRange[1].format('YYYY-MM-DD');
+      }
+
+      let url = '';
+      let filename = '';
+      if (reportType === 'sales') {
+        url = '/reports/sales/export';
+        filename = `sales-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+      } else if (reportType === 'tasks') {
+        url = '/reports/tasks/export';
+        filename = `task-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+      } else if (reportType === 'invoices') {
+        url = '/reports/invoices/export';
+        filename = `invoice-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+      }
+
+      const response = await api.get(url, {
+        params,
+        responseType: 'blob',
+      });
+
+      const url_blob = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url_blob;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url_blob);
+      message.success(t('reports.exportSuccess'));
+    } catch (error: any) {
+      message.error(error.response?.data?.message || t('common.error'));
+    }
+  };
+
   const salesColumns: ColumnsType<any> = [
     {
       title: t('reports.stage'),
@@ -206,6 +249,13 @@ const Reports = () => {
           />
           <Button type="primary" onClick={fetchReport} loading={loading}>
             {t('reports.generate')}
+          </Button>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={handleExportExcel}
+            disabled={!salesReport && !taskReport && !invoiceReport}
+          >
+            {t('reports.exportExcel')}
           </Button>
         </Space>
       </Card>
@@ -434,6 +484,37 @@ const Reports = () => {
           )}
         </>
       )}
+
+      {/* Advanced Analytics Section */}
+      <Row gutter={16} style={{ marginTop: 24 }}>
+        <Col span={24}>
+          <Card title={t('reports.advancedAnalytics')}>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Statistic
+                  title={t('reports.totalCustomers')}
+                  value={salesReport?.totalOpportunities || 0}
+                  prefix={<UserOutlined />}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title={t('reports.totalTasks')}
+                  value={taskReport?.totalTasks || 0}
+                  prefix={<CheckCircleOutlined />}
+                />
+              </Col>
+              <Col span={8}>
+                <Statistic
+                  title={t('reports.totalInvoices')}
+                  value={invoiceReport?.totalInvoices || 0}
+                  prefix={<FileTextOutlined />}
+                />
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

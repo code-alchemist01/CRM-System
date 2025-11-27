@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
+import * as ExcelJS from 'exceljs';
 import { Customer } from '../customers/entities/customer.entity';
 import { Opportunity } from '../opportunities/entities/opportunity.entity';
 import { Task } from '../tasks/entities/task.entity';
@@ -266,6 +267,124 @@ export class ReportsService {
     });
 
     return activities;
+  }
+
+  async exportSalesReportToExcel(
+    tenantId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<Buffer> {
+    const report = await this.getSalesReport(tenantId, startDate, endDate);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sales Report');
+
+    // Header
+    worksheet.columns = [
+      { header: 'Metric', key: 'metric', width: 30 },
+      { header: 'Value', key: 'value', width: 20 },
+    ];
+
+    // Summary data
+    worksheet.addRow({ metric: 'Total Revenue', value: report.totalRevenue });
+    worksheet.addRow({ metric: 'Total Opportunities', value: report.totalOpportunities });
+    worksheet.addRow({ metric: 'Won Opportunities', value: report.wonOpportunities });
+    worksheet.addRow({ metric: 'Average Deal Size', value: report.averageDealSize.toFixed(2) });
+    worksheet.addRow({ metric: 'Conversion Rate (%)', value: report.conversionRate.toFixed(2) });
+
+    worksheet.addRow({}); // Empty row
+
+    // Opportunities by stage
+    worksheet.addRow({ metric: 'Stage', value: 'Count / Value' });
+    report.opportunitiesByStage.forEach((stage) => {
+      worksheet.addRow({
+        metric: stage.stage,
+        value: `${stage.count} / ${stage.value}`,
+      });
+    });
+
+    // Style header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(7).font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async exportTaskReportToExcel(
+    tenantId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<Buffer> {
+    const report = await this.getTaskReport(tenantId, startDate, endDate);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Task Report');
+
+    // Header
+    worksheet.columns = [
+      { header: 'Metric', key: 'metric', width: 30 },
+      { header: 'Value', key: 'value', width: 20 },
+    ];
+
+    worksheet.addRow({ metric: 'Total Tasks', value: report.totalTasks });
+    worksheet.addRow({ metric: 'Completed Tasks', value: report.completedTasks });
+    worksheet.addRow({ metric: 'Overdue Tasks', value: report.overdueTasks });
+
+    worksheet.addRow({});
+
+    worksheet.addRow({ metric: 'Status', value: 'Count' });
+    report.tasksByStatus.forEach((status) => {
+      worksheet.addRow({ metric: status.status, value: status.count });
+    });
+
+    worksheet.addRow({});
+
+    worksheet.addRow({ metric: 'Priority', value: 'Count' });
+    report.tasksByPriority.forEach((priority) => {
+      worksheet.addRow({ metric: priority.priority, value: priority.count });
+    });
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(5).font = { bold: true };
+    worksheet.getRow(5 + report.tasksByStatus.length + 1).font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async exportInvoiceReportToExcel(
+    tenantId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<Buffer> {
+    const report = await this.getInvoiceReport(tenantId, startDate, endDate);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Invoice Report');
+
+    worksheet.columns = [
+      { header: 'Metric', key: 'metric', width: 30 },
+      { header: 'Value', key: 'value', width: 20 },
+    ];
+
+    worksheet.addRow({ metric: 'Total Invoices', value: report.totalInvoices });
+    worksheet.addRow({ metric: 'Total Revenue', value: report.totalRevenue });
+    worksheet.addRow({ metric: 'Paid Invoices', value: report.paidInvoices });
+    worksheet.addRow({ metric: 'Pending Invoices', value: report.pendingInvoices });
+
+    worksheet.addRow({});
+
+    worksheet.addRow({ metric: 'Status', value: 'Count / Amount' });
+    report.invoicesByStatus.forEach((status) => {
+      worksheet.addRow({
+        metric: status.status,
+        value: `${status.count} / ${status.amount}`,
+      });
+    });
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(6).font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
   }
 }
 

@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
@@ -28,8 +29,8 @@ export class TasksController {
   }
 
   @Get()
-  findAll(@Request() req) {
-    return this.tasksService.findAll(req.user.tenantId);
+  findAll(@Query('search') search: string, @Request() req) {
+    return this.tasksService.findAll(req.user.tenantId, search);
   }
 
   @Get(':id')

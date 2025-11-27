@@ -12,8 +12,6 @@ import { Tenant } from '../../tenants/entities/tenant.entity';
 import { Customer } from '../../customers/entities/customer.entity';
 import { InvoiceItem } from './invoice-item.entity';
 import { Payment } from './payment.entity';
-import { InvoiceTemplate } from './invoice-template.entity';
-
 export enum InvoiceStatus {
   DRAFT = 'draft',
   SENT = 'sent',
@@ -35,13 +33,6 @@ export class Invoice {
   @ManyToOne(() => Customer)
   @JoinColumn({ name: 'customerId' })
   customer: Customer;
-
-  @Column({ type: 'uuid', nullable: true })
-  templateId: string;
-
-  @ManyToOne(() => InvoiceTemplate)
-  @JoinColumn({ name: 'templateId' })
-  template: InvoiceTemplate;
 
   @Column({
     type: 'enum',

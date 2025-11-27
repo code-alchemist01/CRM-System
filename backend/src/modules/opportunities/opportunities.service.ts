@@ -24,12 +24,22 @@ export class OpportunitiesService {
     return this.opportunityRepository.save(opportunity);
   }
 
-  async findAll(tenantId: string): Promise<Opportunity[]> {
-    return this.opportunityRepository.find({
-      where: { tenantId },
-      relations: ['stage', 'customer', 'assignedTo'],
-      order: { createdAt: 'DESC' },
-    });
+  async findAll(tenantId: string, search?: string): Promise<Opportunity[]> {
+    const queryBuilder = this.opportunityRepository
+      .createQueryBuilder('opportunity')
+      .leftJoinAndSelect('opportunity.stage', 'stage')
+      .leftJoinAndSelect('opportunity.customer', 'customer')
+      .leftJoinAndSelect('opportunity.assignedTo', 'assignedTo')
+      .where('opportunity.tenantId = :tenantId', { tenantId });
+
+    if (search && search.trim()) {
+      queryBuilder.andWhere(
+        '(opportunity.title ILIKE :search OR opportunity.description ILIKE :search)',
+        { search: `%${search.trim()}%` },
+      );
+    }
+
+    return queryBuilder.orderBy('opportunity.createdAt', 'DESC').getMany();
   }
 
   async findByStage(stageId: string, tenantId: string): Promise<Opportunity[]> {

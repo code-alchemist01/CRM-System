@@ -26,6 +26,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EmailsModule } from './modules/emails/emails.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { EmailTemplatesModule } from './modules/email-templates/email-templates.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import * as redisStore from 'cache-manager-redis-store';
 
@@ -77,6 +79,8 @@ import * as redisStore from 'cache-manager-redis-store';
     EmailsModule,
     AuditLogsModule,
     ReportsModule,
+    EmailTemplatesModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

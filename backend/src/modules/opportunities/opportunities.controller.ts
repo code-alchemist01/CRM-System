@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { OpportunitiesService } from './opportunities.service';
@@ -37,8 +38,8 @@ export class OpportunitiesController {
   }
 
   @Get()
-  findAll(@Request() req) {
-    return this.opportunitiesService.findAll(req.user.tenantId);
+  findAll(@Query('search') search: string, @Request() req) {
+    return this.opportunitiesService.findAll(req.user.tenantId, search);
   }
 
   @Get('stages/:stageId')

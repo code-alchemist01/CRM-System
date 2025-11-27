@@ -13,10 +13,12 @@ class WebSocketService {
   connect() {
     const state = store.getState() as RootState;
     const token = state.auth.token;
-    const tenantId = state.tenant.currentTenantId;
+    const user = state.auth.user;
+    // Try to get tenantId from user first, then from tenant slice
+    const tenantId = user?.tenantId || state.tenant.currentTenantId;
 
     if (!token || !tenantId) {
-      console.warn('Cannot connect: missing token or tenantId');
+      // Silently fail - this is expected if user is not logged in yet
       return;
     }
 

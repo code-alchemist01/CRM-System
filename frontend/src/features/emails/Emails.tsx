@@ -13,8 +13,9 @@ import {
   Typography,
   Tag,
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SendOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SendOutlined, MailOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../utils/axios';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -56,11 +57,20 @@ interface Opportunity {
   title: string;
 }
 
+interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+}
+
 const Emails = () => {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [emails, setEmails] = useState<Email[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmail, setEditingEmail] = useState<Email | null>(null);
@@ -70,7 +80,19 @@ const Emails = () => {
     fetchEmails();
     fetchCustomers();
     fetchOpportunities();
+    fetchEmailTemplates();
   }, []);
+
+  useEffect(() => {
+    // Check if template ID is in URL
+    const templateId = searchParams.get('template');
+    if (templateId) {
+      loadTemplate(templateId);
+      // Clear the URL parameter
+      setSearchParams({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const fetchEmails = async () => {
     setLoading(true);
@@ -99,6 +121,30 @@ const Emails = () => {
       setOpportunities(response.data.data || response.data || []);
     } catch (error: any) {
       console.error('Error fetching opportunities:', error);
+    }
+  };
+
+  const fetchEmailTemplates = async () => {
+    try {
+      const response = await api.get('/email-templates');
+      const data = response.data.data || response.data;
+      setEmailTemplates(Array.isArray(data) ? data : []);
+    } catch (error: any) {
+      console.error('Error fetching email templates:', error);
+    }
+  };
+
+  const loadTemplate = async (templateId: string) => {
+    try {
+      const response = await api.get(`/email-templates/${templateId}`);
+      const template = response.data.data || response.data;
+      form.setFieldsValue({
+        subject: template.subject,
+        body: template.body,
+      });
+      setIsModalOpen(true);
+    } catch (error: any) {
+      message.error(error.response?.data?.message || t('common.error'));
     }
   };
 
@@ -202,6 +248,12 @@ const Emails = () => {
       title: t('emails.subject'),
       dataIndex: 'subject',
       key: 'subject',
+      render: (text: string, record: Email) => (
+        <Space>
+          {record.status === 'received' && <MailOutlined style={{ color: '#1890ff' }} />}
+          <span>{text}</span>
+        </Space>
+      ),
     },
     {
       title: t('emails.to'),
@@ -309,6 +361,26 @@ const Emails = () => {
           layout="vertical"
           onFinish={handleSubmit}
         >
+          <Form.Item
+            label={t('emails.template')}
+            name="templateId"
+          >
+            <Select
+              placeholder={t('emails.templatePlaceholder')}
+              allowClear
+              onChange={(templateId) => {
+                if (templateId) {
+                  loadTemplate(templateId);
+                }
+              }}
+            >
+              {emailTemplates.map((template) => (
+                <Select.Option key={template.id} value={template.id}>
+                  {template.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
           <Form.Item
             label={t('emails.subject')}
             name="subject"

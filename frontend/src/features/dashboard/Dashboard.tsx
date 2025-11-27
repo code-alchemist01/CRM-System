@@ -28,14 +28,19 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  const { data, isLoading, error } = useGetDetailedStatsQuery();
+  const { data, isLoading, error, refetch } = useGetDetailedStatsQuery(undefined, {
+    pollingInterval: 30000, // Her 30 saniyede bir güncelle
+  });
 
   const activityColumns: ColumnsType<any> = [
     {
-      title: t('activities.type'),
+      title: t('activities.typeLabel'),
       dataIndex: 'type',
       key: 'type',
-      render: (type: string) => <Tag color="blue">{type}</Tag>,
+      render: (type: string) => {
+        const typeTranslation = t(`activities.type.${type}`) || type || '-';
+        return <Tag color="blue">{typeTranslation}</Tag>;
+      },
     },
     {
       title: t('activities.title'),
@@ -75,10 +80,12 @@ const Dashboard = () => {
     return <Empty description={t('common.error')} />;
   }
 
-  const stats = data?.summary || {};
-  const tasksByStatus = data?.tasksByStatus || [];
-  const opportunitiesByStage = data?.opportunitiesByStage || [];
-  const recentActivities = data?.recentActivities || [];
+  // RTK Query returns data directly, but backend might wrap it in { data: {...} }
+  const responseData = data?.data || data;
+  const stats = responseData?.summary || {};
+  const tasksByStatus = responseData?.tasksByStatus || [];
+  const opportunitiesByStage = responseData?.opportunitiesByStage || [];
+  const recentActivities = responseData?.recentActivities || [];
 
   const taskChartData = tasksByStatus.map((item: any) => ({
     name: item.status,

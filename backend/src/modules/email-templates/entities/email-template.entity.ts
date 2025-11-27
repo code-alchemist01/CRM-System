@@ -4,23 +4,24 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Invoice } from './invoice.entity';
 import { Tenant } from '../../tenants/entities/tenant.entity';
 
-@Entity('invoice_templates')
-export class InvoiceTemplate {
+@Entity('email_templates')
+export class EmailTemplate {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
+  @Column()
+  subject: string;
+
   @Column({ type: 'text' })
-  template: string;
+  body: string;
 
   @Column({ type: 'uuid' })
   tenantId: string;
@@ -28,9 +29,6 @@ export class InvoiceTemplate {
   @ManyToOne(() => Tenant)
   @JoinColumn({ name: 'tenantId' })
   tenant: Tenant;
-
-  @OneToMany(() => Invoice, (invoice) => invoice.template)
-  invoices: Invoice[];
 
   @CreateDateColumn()
   createdAt: Date;

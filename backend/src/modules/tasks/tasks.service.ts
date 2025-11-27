@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Task } from './entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { Like } from 'typeorm';
 
 @Injectable()
 export class TasksService {
@@ -17,9 +18,13 @@ export class TasksService {
     return this.taskRepository.save(task);
   }
 
-  async findAll(tenantId: string): Promise<Task[]> {
+  async findAll(tenantId: string, search?: string): Promise<Task[]> {
+    const where: any = { tenantId };
+    if (search && search.trim()) {
+      where.title = Like(`%${search.trim()}%`);
+    }
     return this.taskRepository.find({
-      where: { tenantId },
+      where,
       relations: ['assignedTo', 'customer', 'opportunity'],
       order: { createdAt: 'DESC' },
     });

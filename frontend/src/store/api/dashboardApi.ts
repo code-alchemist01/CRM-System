@@ -5,10 +5,12 @@ export const dashboardApi = apiSlice.injectEndpoints({
     getStats: builder.query<any, void>({
       query: () => '/dashboard/stats',
       providesTags: ['Dashboard'],
+      refetchOnMountOrArgChange: true,
     }),
     getDetailedStats: builder.query<any, void>({
       query: () => '/dashboard/detailed',
       providesTags: ['Dashboard'],
+      refetchOnMountOrArgChange: true,
     }),
   }),
 });

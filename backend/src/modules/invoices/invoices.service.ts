@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import PDFDocument = require('pdfkit');
 import * as path from 'path';
 import * as fs from 'fs';
@@ -23,10 +23,14 @@ export class InvoicesService {
     return this.invoiceRepository.save(invoice);
   }
 
-  async findAll(tenantId: string): Promise<Invoice[]> {
+  async findAll(tenantId: string, search?: string): Promise<Invoice[]> {
+    const where: any = { tenantId };
+    if (search && search.trim()) {
+      where.invoiceNumber = Like(`%${search.trim()}%`);
+    }
     return this.invoiceRepository.find({
-      where: { tenantId },
-      relations: ['customer', 'items', 'payments', 'template'],
+      where,
+      relations: ['customer', 'items', 'payments'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -34,7 +38,7 @@ export class InvoicesService {
   async findOne(id: string, tenantId: string): Promise<Invoice> {
     const invoice = await this.invoiceRepository.findOne({
       where: { id, tenantId },
-      relations: ['customer', 'items', 'payments', 'template'],
+      relations: ['customer', 'items', 'payments'],
     });
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);

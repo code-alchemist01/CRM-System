@@ -26,11 +26,6 @@ export class CreateInvoiceDto {
   @IsUUID()
   customerId: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsUUID()
-  templateId?: string;
-
   @ApiProperty({ enum: InvoiceStatus, default: InvoiceStatus.DRAFT })
   @IsOptional()
   status?: InvoiceStatus;

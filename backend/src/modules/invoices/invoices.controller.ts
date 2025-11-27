@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Res,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -30,8 +31,8 @@ export class InvoicesController {
   }
 
   @Get()
-  findAll(@Request() req) {
-    return this.invoicesService.findAll(req.user.tenantId);
+  findAll(@Query('search') search: string, @Request() req) {
+    return this.invoicesService.findAll(req.user.tenantId, search);
   }
 
   @Get(':id')

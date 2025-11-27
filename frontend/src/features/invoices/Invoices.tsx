@@ -54,6 +54,7 @@ const Invoices = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -156,6 +157,33 @@ const Invoices = () => {
     } catch (error: any) {
       message.error(error.response?.data?.message || t('common.error'));
     }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning(t('invoices.noSelection'));
+      return;
+    }
+
+    try {
+      await Promise.all(
+        selectedRowKeys.map((id) => api.delete(`/invoices/${id}`)),
+      );
+      message.success(
+        t('invoices.bulkDeleteSuccess', { count: selectedRowKeys.length }),
+      );
+      setSelectedRowKeys([]);
+      fetchData();
+    } catch (error: any) {
+      message.error(error.response?.data?.message || t('common.error'));
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
   };
 
   const handleExportPDF = async (id: string) => {
@@ -307,18 +335,36 @@ const Invoices = () => {
           </div>
         </Col>
         <Col>
-          <Button
-            type="primary"
-            size="large"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setEditingInvoice(null);
-              form.resetFields();
-              setModalVisible(true);
-            }}
-          >
-            {t('invoices.create')}
-          </Button>
+          <Space>
+            {selectedRowKeys.length > 0 && (
+              <Popconfirm
+                title={t('invoices.bulkDeleteConfirm', { count: selectedRowKeys.length })}
+                onConfirm={handleBulkDelete}
+                okText={t('common.yes')}
+                cancelText={t('common.no')}
+              >
+                <Button
+                  danger
+                  size="large"
+                  icon={<DeleteOutlined />}
+                >
+                  {t('invoices.bulkDelete', { count: selectedRowKeys.length })}
+                </Button>
+              </Popconfirm>
+            )}
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setEditingInvoice(null);
+                form.resetFields();
+                setModalVisible(true);
+              }}
+            >
+              {t('invoices.create')}
+            </Button>
+          </Space>
         </Col>
       </Row>
 
@@ -340,6 +386,7 @@ const Invoices = () => {
           dataSource={filteredInvoices}
           loading={loading}
           rowKey="id"
+          rowSelection={rowSelection}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

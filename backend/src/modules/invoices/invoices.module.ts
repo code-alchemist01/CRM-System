@@ -4,11 +4,10 @@ import { InvoicesController } from './invoices.controller';
 import { InvoicesService } from './invoices.service';
 import { Invoice } from './entities/invoice.entity';
 import { InvoiceItem } from './entities/invoice-item.entity';
-import { InvoiceTemplate } from './entities/invoice-template.entity';
 import { Payment } from './entities/payment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Invoice, InvoiceItem, InvoiceTemplate, Payment])],
+  imports: [TypeOrmModule.forFeature([Invoice, InvoiceItem, Payment])],
   controllers: [InvoicesController],
   providers: [InvoicesService],
   exports: [InvoicesService],

@@ -31,8 +31,8 @@ export class CustomersService {
 
   async findAll(tenantId: string, search?: string): Promise<Customer[]> {
     const where: any = { tenantId };
-    if (search) {
-      where.name = Like(`%${search}%`);
+    if (search && search.trim()) {
+      where.name = Like(`%${search.trim()}%`);
     }
     return this.customerRepository.find({
       where,

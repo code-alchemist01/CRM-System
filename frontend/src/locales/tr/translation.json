@@ -9,12 +9,16 @@
     "edit": "Düzenle",
     "create": "Oluştur",
     "search": "Ara",
+    "searchPlaceholder": "Ara... (Müşteri, Fırsat, Görev, Fatura)",
+    "noResults": "Sonuç bulunamadı",
     "filter": "Filtrele",
     "export": "Dışa Aktar",
     "loading": "Yükleniyor...",
     "error": "Hata",
     "success": "Başarılı",
-    "actions": "İşlemler"
+    "actions": "İşlemler",
+    "yes": "Evet",
+    "no": "Hayır"
   },
   "auth": {
     "email": "E-posta",
@@ -136,7 +140,11 @@
     "addressPlaceholder": "Adres",
     "nameRequired": "Müşteri adı gereklidir",
     "emailInvalid": "Geçerli bir e-posta adresi giriniz",
-    "total": "toplam"
+    "total": "toplam",
+    "bulkDelete": "Seçili {{count}} Kaydı Sil",
+    "bulkDeleteConfirm": "Seçili {{count}} müşteriyi silmek istediğinizden emin misiniz?",
+    "bulkDeleteSuccess": "{{count}} müşteri başarıyla silindi",
+    "noSelection": "Lütfen silmek için en az bir kayıt seçin"
   },
   "opportunities": {
     "title": "Satış Fırsatları",
@@ -197,7 +205,11 @@
         "dueDate": "Bitiş Tarihi",
         "assignedTo": "Atanan",
         "assignedToRequired": "Kullanıcı seçilmedi veya oturum açılmamış",
-        "description": "Açıklama"
+        "description": "Açıklama",
+        "bulkDelete": "Seçili {{count}} Kaydı Sil",
+        "bulkDeleteConfirm": "Seçili {{count}} görevi silmek istediğinizden emin misiniz?",
+        "bulkDeleteSuccess": "{{count}} görev başarıyla silindi",
+        "noSelection": "Lütfen silmek için en az bir kayıt seçin"
   },
   "invoices": {
     "title": "Faturalar",
@@ -233,7 +245,11 @@
     },
     "issueDate": "Düzenleme Tarihi",
     "dueDate": "Vade Tarihi",
-    "exportPDF": "PDF İndir"
+    "exportPDF": "PDF İndir",
+    "bulkDelete": "Seçili {{count}} Kaydı Sil",
+    "bulkDeleteConfirm": "Seçili {{count}} faturayı silmek istediğinizden emin misiniz?",
+    "bulkDeleteSuccess": "{{count}} fatura başarıyla silindi",
+    "noSelection": "Lütfen silmek için en az bir kayıt seçin"
   },
   "profile": {
     "title": "Profil",
@@ -281,7 +297,12 @@
     "count": "Adet",
     "value": "Değer",
     "amount": "Tutar",
-    "noData": "Veri bulunamadı"
+    "noData": "Veri bulunamadı",
+    "exportExcel": "Excel'e Aktar",
+    "exportSuccess": "Rapor Excel olarak indirildi",
+    "tasksByPriority": "Önceliğe Göre Görevler",
+    "advancedAnalytics": "Gelişmiş Analitikler",
+    "totalCustomers": "Toplam Müşteri"
   },
   "documents": {
     "title": "Dokümanlar",
@@ -299,6 +320,56 @@
     "preview": "Önizle",
     "download": "İndir",
     "previewNotAvailable": "Bu dosya türü için önizleme mevcut değil"
+  },
+  "emailTemplates": {
+    "title": "E-posta Şablonları",
+    "create": "Yeni Şablon",
+    "newTemplate": "Yeni E-posta Şablonu",
+    "editTemplate": "E-posta Şablonu Düzenle",
+    "createSuccess": "Şablon başarıyla oluşturuldu",
+    "updateSuccess": "Şablon başarıyla güncellendi",
+    "deleteSuccess": "Şablon başarıyla silindi",
+    "deleteConfirm": "Bu şablonu silmek istediğinizden emin misiniz?",
+    "name": "Ad",
+    "subject": "Konu",
+    "body": "İçerik",
+    "use": "Kullan",
+    "searchPlaceholder": "Şablon ara...",
+    "namePlaceholder": "Şablon adı",
+    "subjectPlaceholder": "E-posta konusu",
+    "bodyPlaceholder": "E-posta içeriği",
+    "nameRequired": "Ad gereklidir",
+    "subjectRequired": "Konu gereklidir",
+    "bodyRequired": "İçerik gereklidir"
+  },
+  "payments": {
+    "title": "Ödemeler",
+    "create": "Yeni Ödeme",
+    "newPayment": "Yeni Ödeme",
+    "editPayment": "Ödeme Düzenle",
+    "createSuccess": "Ödeme başarıyla oluşturuldu",
+    "updateSuccess": "Ödeme başarıyla güncellendi",
+    "deleteSuccess": "Ödeme başarıyla silindi",
+    "deleteConfirm": "Bu ödemeyi silmek istediğinizden emin misiniz?",
+    "invoice": "Fatura",
+    "amount": "Tutar",
+    "paymentMethod": "Ödeme Yöntemi",
+    "paymentDate": "Ödeme Tarihi",
+    "notes": "Notlar",
+    "searchPlaceholder": "Ödeme ara...",
+    "invoiceFilter": "Fatura Filtrele",
+    "invoicePlaceholder": "Fatura seçin",
+    "amountPlaceholder": "Ödeme tutarı",
+    "paymentMethodPlaceholder": "Ödeme yöntemi seçin",
+    "invoiceRequired": "Fatura gereklidir",
+    "amountRequired": "Tutar gereklidir",
+    "methods": {
+      "cash": "Nakit",
+      "bankTransfer": "Banka Transferi",
+      "creditCard": "Kredi Kartı",
+      "check": "Çek",
+      "other": "Diğer"
+    }
   },
   "emails": {
     "title": "E-postalar",
@@ -324,6 +395,8 @@
     },
     "customer": "Müşteri",
     "opportunity": "Fırsat",
+    "template": "Şablon",
+    "templatePlaceholder": "E-posta şablonu seçin (isteğe bağlı)",
     "sentAt": "Gönderilme Tarihi",
     "send": "Gönder",
     "saveDraft": "Taslak Olarak Kaydet",

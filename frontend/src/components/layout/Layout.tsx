@@ -15,10 +15,13 @@ import {
   MailOutlined,
   HistoryOutlined,
   SafetyOutlined,
+  FileProtectOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 import { logout } from '../../store/slices/authSlice';
 import type { RootState } from '../../store/store';
 import NotificationBell from '../notifications/NotificationBell';
+import GlobalSearch from '../common/GlobalSearch';
 
 const { Header, Sider, Content } = AntLayout;
 
@@ -88,6 +91,16 @@ const Layout = ({ children }: LayoutProps) => {
       key: '/reports',
       icon: <BarChartOutlined />,
       label: t('reports.title'),
+    },
+    {
+      key: '/email-templates',
+      icon: <MailOutlined />,
+      label: t('emailTemplates.title'),
+    },
+    {
+      key: '/payments',
+      icon: <CreditCardOutlined />,
+      label: t('payments.title'),
     },
   ];
 
@@ -163,6 +176,7 @@ const Layout = ({ children }: LayoutProps) => {
             {user?.firstName} {user?.lastName}
           </div>
           <Space size="middle">
+            <GlobalSearch />
             <Space>
               <Button
                 type={i18n.language === 'tr' ? 'primary' : 'default'}
